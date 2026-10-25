@@ -7,6 +7,8 @@ import { useAppStore } from '../../lib/store';
 import { shouldAutoplayFinishedReply, useTtsStore } from '../../lib/tts';
 import { stripThinkTags } from '../../lib/message-text';
 import { Sparkles, PanelRightOpen, PanelRightClose, Database, MessageSquare, X } from 'lucide-react';
+import { CommandCenter } from '../Jarvis/CommandCenter';
+import type { SpeechState } from '../../hooks/useSpeech';
 import { listConnectors } from '../../lib/connectors-api';
 
 function getGreeting(): string {
@@ -17,6 +19,15 @@ function getGreeting(): string {
 }
 
 export function ChatArea() {
+  const [speech, setSpeech] = useState<SpeechState>('idle');
+  const [inputError, setInputError] = useState(false);
+  const [classic, setClassic] = useState(() => {
+    try { return localStorage.getItem('jarvis-classic') === 'true'; } catch { return false; }
+  });
+  const toggleView = () => {
+    setClassic(!classic);
+    try { localStorage.setItem('jarvis-classic', String(!classic)); } catch { /* Session only. */ }
+  };
   const activeId = useAppStore((s) => s.activeId);
   const messages = useAppStore((s) => s.messages);
   const streamState = useAppStore((s) => s.streamState);
@@ -135,7 +146,10 @@ export function ChatArea() {
   return (
     <div className="flex flex-col h-full">
       {/* Toggle bar */}
-      <div className="flex items-center justify-end px-3 py-1.5 shrink-0">
+      <div className="flex items-center justify-end gap-3 pl-3 pr-14 py-1.5 shrink-0">
+        <button onClick={toggleView} className="text-xs cursor-pointer" style={{ color: 'var(--color-text-secondary)' }}>
+          {classic ? 'Vue JARVIS' : 'Vue classique'}
+        </button>
         <button
           onClick={toggleSystemPanel}
           className="p-1.5 rounded-md transition-colors cursor-pointer"
@@ -180,8 +194,9 @@ export function ChatArea() {
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto"
       >
+        {!classic && <CommandCenter speech={speech} inputError={inputError} compact={!isEmpty} />}
         {isEmpty ? (
-          <div className="flex flex-col items-center justify-center h-full px-4">
+          <div className={`flex flex-col items-center justify-center px-4 ${classic ? 'h-full' : 'py-6'}`}>
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
               style={{ background: 'var(--color-accent-subtle)', color: 'var(--color-accent)' }}
@@ -192,7 +207,7 @@ export function ChatArea() {
               {getGreeting()}
             </h2>
             <p className="text-sm text-center max-w-sm mb-6" style={{ color: 'var(--color-text-secondary)' }}>
-              Ask anything. Your AI runs locally — private, fast, and always available.
+              Posez votre question. Le traitement peut être local ou externe selon le moteur configuré.
             </p>
 
             {/* Quick action hints */}
@@ -255,7 +270,7 @@ export function ChatArea() {
           </div>
         )}
       </div>
-      <InputArea />
+      <InputArea onSpeechState={setSpeech} onInputError={setInputError} />
     </div>
   );
 }

@@ -52,6 +52,11 @@ Then `jarvis` to start. The Rust extension and larger models continue downloadin
 
 Platform-specific notes (WSL2 setup, native-Windows scheduled-task service, desktop prerequisites, manual / contributor install): see the [installation docs](https://open-jarvis.github.io/OpenJarvis/getting-started/install/).
 
+## Personal J.A.R.V.I.S. interface
+
+This fork includes a reactive command center in the existing chat interface.
+See [the architecture review, Linux setup and implementation roadmap](docs/getting-started/jarvis-personal.md).
+
 ## Quick Start
 
 ```bash

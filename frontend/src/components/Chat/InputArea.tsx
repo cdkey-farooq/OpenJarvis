@@ -79,7 +79,10 @@ function useResearchCorpusSync(enabled: boolean): {
   return state;
 }
 
-export function InputArea() {
+export function InputArea({ onSpeechState, onInputError }: {
+  onSpeechState?: (state: import('../../hooks/useSpeech').SpeechState) => void;
+  onInputError?: (error: boolean) => void;
+} = {}) {
   const [input, setInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -110,6 +113,9 @@ export function InputArea() {
     startRecording,
     stopRecording,
   } = useSpeech();
+
+  useEffect(() => { onSpeechState?.(speechState); }, [speechState, onSpeechState]);
+  useEffect(() => { if (speechError) onInputError?.(true); }, [speechError, onInputError]);
 
   // Abort in-flight stream when the user switches models mid-generation.
   // This prevents errors from trying to continue a stream with a stale model.
@@ -151,9 +157,10 @@ export function InputArea() {
         // Error is captured in useSpeech
       }
     } else {
+      onInputError?.(false);
       await startRecording();
     }
-  }, [speechState, startRecording, stopRecording]);
+  }, [speechState, startRecording, stopRecording, onInputError]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -174,6 +181,7 @@ export function InputArea() {
   const sendMessage = useCallback(async () => {
     const content = input.trim();
     if (!content || streamState.isStreaming) return;
+    onInputError?.(false);
     if (!selectedModel) {
       toast.error('Pick a model first (⌘K)');
       return;
@@ -333,6 +341,7 @@ export function InputArea() {
               duration_s: ev.duration_s,
             });
           } else if (ev.type === 'error') {
+            onInputError?.(true);
             // Backend setup/worker failure (Ollama down, planner model
             // missing, KnowledgeStore locked, etc.). Without surfacing the
             // message, the user sees only the generic "No response was
@@ -458,6 +467,7 @@ export function InputArea() {
         // User cancelled or model switch — keep whatever was accumulated
         if (!accumulatedContent) accumulatedContent = '(Generation stopped)';
       } else {
+        onInputError?.(true);
         const errMsg = err?.message || String(err);
         accumulatedContent =
           accumulatedContent || `Error: ${errMsg}`;
@@ -608,7 +618,8 @@ export function InputArea() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={selectedModel ? 'Message OpenJarvis...' : 'Pick a model first (⌘K)...'}
+          aria-label="Message à JARVIS"
+          placeholder={selectedModel ? 'Votre message à JARVIS…' : 'Choisissez un modèle (Ctrl/⌘ K)…'}
           rows={1}
           className="flex-1 bg-transparent outline-none resize-none text-sm leading-relaxed"
           style={{ color: 'var(--color-text)', maxHeight: '200px' }}
@@ -619,7 +630,7 @@ export function InputArea() {
             onClick={stopStreaming}
             className="p-2 rounded-xl transition-colors shrink-0 cursor-pointer"
             style={{ background: 'var(--color-error)', color: 'var(--color-on-accent)' }}
-            title="Stop generating"
+            title="Arrêter la génération" aria-label="Arrêter la génération"
           >
             <Square size={16} />
           </button>
