@@ -6,6 +6,7 @@ import { useTtsStore } from '../../lib/tts';
 import { apiFetch, fetchPendingApprovals } from '../../lib/api';
 import { resolveJarvisState } from '../../lib/jarvis-state';
 import type { SpeechState } from '../../hooks/useSpeech';
+import { exportConversations } from '../../lib/conversation-export';
 import { JarvisCore } from './JarvisCore';
 import './jarvis.css';
 
@@ -18,6 +19,22 @@ interface Snapshot {
 export function CommandCenter({ speech, inputError, compact }: {
   speech: SpeechState; inputError: boolean; compact: boolean;
 }) {
+  const conversations = useAppStore(s => s.conversations);
+  const [exportError, setExportError] = useState('');
+  const downloadHistory = () => {
+    setExportError('');
+    try {
+      const blob = new Blob([exportConversations(conversations)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `jarvis-conversations-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch { setExportError('Impossible de télécharger les conversations.'); }
+  };
   const stream = useAppStore(s => s.streamState);
   const selectedModel = useAppStore(s => s.selectedModel);
   const apiUrl = useAppStore(s => s.settings.apiUrl);
@@ -95,6 +112,12 @@ export function CommandCenter({ speech, inputError, compact }: {
           {(approvals ?? 0) > 0 && <p className="jarvis-warning">Consultez la cloche en haut à droite pour examiner chaque action.</p>}
           <Link to="/settings">Configurer les connexions <ArrowUpRight size={13} /></Link>
         </aside>
+      </div>
+      <div className="jarvis-actions">
+        <button onClick={downloadHistory} disabled={conversations.length === 0}>Exporter les conversations ({conversations.length})</button>
+        {tts !== 'idle' && <button onClick={() => useTtsStore.getState().stop()}>Couper la réponse vocale</button>}
+        {stream.activeToolCalls.filter(t => t.status === 'running').map(t => <span key={t.id} role="status">Outil en cours : {t.tool}</span>)}
+        {exportError && <span role="alert">{exportError}</span>}
       </div>
       {!compact && <nav className="jarvis-shortcuts" aria-label="Accès rapides">
         <Link to="/data-sources">Documents & sources <ArrowUpRight size={14} /></Link>
