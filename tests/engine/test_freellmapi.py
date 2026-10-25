@@ -15,6 +15,7 @@ def test_freellmapi_defaults_and_bearer_auth(monkeypatch) -> None:
     monkeypatch.setenv("FREELLMAPI_API_KEY", "test-unified-key")
     engine = FreeLLMAPIEngine()
     assert engine._host == "http://localhost:3001"
+    assert engine.is_cloud is True  # Requests can reach external free-tier providers.
 
     def respond(request: httpx.Request) -> httpx.Response:
         assert request.url.path == "/v1/chat/completions"
