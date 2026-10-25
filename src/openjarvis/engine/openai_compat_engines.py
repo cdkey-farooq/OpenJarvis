@@ -23,8 +23,12 @@ for _key, (_cls_name, _default_host, _api_prefix) in _ENGINES.items():
     _cls = type(
         _cls_name,
         (_OpenAICompatibleEngine,),
-        {"engine_id": _key, "_default_host": _default_host, "_api_prefix": _api_prefix,
-         "is_cloud": _key == "freellmapi"},
+        {
+            "engine_id": _key,
+            "_default_host": _default_host,
+            "_api_prefix": _api_prefix,
+            "is_cloud": _key == "freellmapi",
+        },
     )
     EngineRegistry.register(_key)(_cls)
     globals()[_cls_name] = _cls
