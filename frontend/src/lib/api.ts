@@ -1160,8 +1160,8 @@ export interface PendingApproval {
   expires_at: string;
 }
 
-export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
-  const res = await apiFetch(`/v1/approvals/pending`);
+export async function fetchPendingApprovals(signal?: AbortSignal): Promise<PendingApproval[]> {
+  const res = await apiFetch(`/v1/approvals/pending`, { signal });
   if (!res.ok) throw new Error(`Failed: ${res.status}`);
   const data = await res.json();
   return data.actions || [];

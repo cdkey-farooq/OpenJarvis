@@ -453,7 +453,9 @@ def _uses_direct_cloud_router(engine: Any, model: str) -> bool:
     """Whether *model* should bypass the configured engine for direct cloud."""
     from openjarvis.server.cloud_router import is_cloud_model
 
-    return is_cloud_model(model) and _engine_key_for_model(engine, model) != "litellm"
+    return is_cloud_model(model) and _engine_key_for_model(engine, model) not in {
+        "litellm", "freellmapi",
+    }
 
 
 def _handle_direct(

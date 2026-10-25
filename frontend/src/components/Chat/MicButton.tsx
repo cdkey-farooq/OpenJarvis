@@ -33,6 +33,8 @@ export function MicButton({ state, onClick, disabled, reason }: MicButtonProps) 
       onMouseLeave={() => setShowTooltip(false)}
     >
       <button
+        aria-label={tooltipText}
+        aria-pressed={state === 'recording'}
         onClick={onClick}
         disabled={isInactive}
         className="p-2 rounded-xl transition-all shrink-0"

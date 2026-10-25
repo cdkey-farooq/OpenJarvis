@@ -20,6 +20,7 @@ from openjarvis.server.analytics_routes import (
     router as analytics_router,
 )
 from openjarvis.server.api_routes import include_all_routes
+from openjarvis.server.command_center import router as command_center_router
 from openjarvis.server.comparison import comparison_router
 from openjarvis.server.connectors_router import create_connectors_router
 from openjarvis.server.dashboard import dashboard_router
@@ -475,6 +476,7 @@ def create_app(
                     pass
 
     app.include_router(router)
+    app.include_router(command_center_router)
     app.include_router(dashboard_router)
     app.include_router(comparison_router)
     app.include_router(create_connectors_router())

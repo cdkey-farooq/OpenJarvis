@@ -47,3 +47,28 @@ async def test_stream_cloud_normalizes_openrouter_model_before_forwarding(
 
     assert tokens == ["ok"]
     assert captured["model"] == expected_forwarded_model
+
+
+@pytest.mark.parametrize("model", ["gemini-2.5-flash", "gpt-4o", "auto"])
+def test_freellmapi_models_preserve_configured_router(model):
+    from openjarvis.engine.openai_compat_engines import FreeLLMAPIEngine
+    from openjarvis.server.routes import _uses_direct_cloud_router
+
+    engine = FreeLLMAPIEngine()
+    try:
+        assert _uses_direct_cloud_router(engine, model) is False
+    finally:
+        engine.close()
+
+
+def test_cloud_models_still_use_direct_router_with_other_engines():
+    from types import SimpleNamespace
+
+    from openjarvis.server.routes import _uses_direct_cloud_router
+
+    assert (
+        _uses_direct_cloud_router(
+            SimpleNamespace(engine_id="ollama"), "gemini-2.5-flash"
+        )
+        is True
+    )
