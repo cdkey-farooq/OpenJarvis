@@ -11,6 +11,7 @@ _ENGINES = {
     "llamacpp": ("LlamaCppEngine", "http://localhost:8080", "/v1"),
     "mlx": ("MLXEngine", "http://localhost:8080", "/v1"),
     "lmstudio": ("LMStudioEngine", "http://localhost:1234", "/v1"),
+    "freellmapi": ("FreeLLMAPIEngine", "http://localhost:3001", "/v1"),
     "exo": ("ExoEngine", "http://localhost:52415", "/v1"),
     "nexa": ("NexaEngine", "http://localhost:18181", "/v1"),
     "uzu": ("UzuEngine", "http://localhost:8000", ""),
